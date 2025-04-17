@@ -29,11 +29,13 @@ wire [31:0] ReadData;
 wire [31:0] signExtend,jSignExtend;
 wire [31:0] muxSignExtend;
 
-wire PCsel;
+wire PCsel,muxPcSel;
+wire [4:0] muxRDest;
+wire [31:0] muxRData;
 
 mem_async meminstr(PC_adr[7:0],Instruction); //Instruction memory
 mem_sync memdata(clk, ALUout[7:0], ReadData, ReadRegister2, MemRead, MemWrite); //Data memory
-rf registerfile(clk,RegWrite,Instruction[25:21],Instruction[20:16],muxinstr_out, ReadRegister1, ReadRegister2, muxdata_out); //Registers
+rf registerfile(clk,RegWrite,Instruction[25:21],Instruction[20:16],muxRDest, ReadRegister1, ReadRegister2, muxRData); //Registers
 //---------------------------rs----------------rt
 alucontrol AluControl(ALUOp, Instruction[5:0], ALUCtrl); //ALUControl-----inst[5:0] - > funct
 alu Alu(ReadRegister1, muxalu_out, ALUCtrl, ALUout, Zero); //ALU
@@ -45,11 +47,15 @@ Jumpsignextend jumpSignExtend(jSignExtend, Instruction[25:0]); //Sign extend
 
 mux #(5) muxinstr(RegDst, Instruction[20:16],Instruction[15:11],muxinstr_out);//MUX for Write Register----here comes rt and rd
 //--use rd for read instruction
-mux #(32) muxalu(AluSrc, ReadRegister2, muxSignExtend, muxalu_out);//MUX for ALU
+mux #(32) muxalu(AluSrc, ReadRegister2, signExtend, muxalu_out);//MUX for ALU
 mux #(32) muxdata(MemtoReg, ALUout, ReadData, muxdata_out); //MUX for Data memory
 mux #(32) muxSE(Jump,signExtend,jSignExtend,muxSignExtend);
+mux #(1) muxpcsel(Jump,PCsel,1'b1,muxPcSel);
 
-pclogic PC(clk, reset, muxSignExtend, PC_adr, PCsel); //generate PC
+mux #(5) muxRegDest(Jal,muxinstr_out,5'b11111,muxRDest);
+mux #(32) muxRegDestData(Jal,muxdata_out,PC_adr+1,muxRData);
+
+pclogic PC(clk, reset, muxSignExtend, PC_adr, muxPcSel); //generate PC
 always @(*)begin
     $display("pc is %d",PC_adr);
 end

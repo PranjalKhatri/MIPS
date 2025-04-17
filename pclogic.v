@@ -17,6 +17,7 @@ always @(posedge clk ) begin
 		end
 		if (pcsel==1) begin
 			aout<=ain+aout+1; //branch
+			$display("a branch at pc of ain %d",ain);
 	end
 end
 

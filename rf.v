@@ -16,6 +16,7 @@ assign db=(rb!=0)?memory[rb]:0;
 always@(posedge clk)begin
 	if(RegWrite==1'b1)begin
 		memory[rc]<=dc;
+		$display("reg write[%d] with %d ",rc,dc);
 	end
 end
 endmodule

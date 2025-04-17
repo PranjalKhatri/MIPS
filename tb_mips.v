@@ -15,8 +15,11 @@ initial begin
 	#10 res = 0;
 
 	#3000
-	for (i = 0; i < mips_DUT.Datapath.memdata.L;i++ ) begin
+	for (i = 0; i < 50;i++ ) begin
 		$display("memory content at %d is %d",i,mips_DUT.Datapath.memdata.memory[i]);
+	end
+	for (i = 0; i<32; i++) begin
+		$display("reg[%d] : %d",i,mips_DUT.Datapath.registerfile.memory[i]);
 	end
 	$finish;
 

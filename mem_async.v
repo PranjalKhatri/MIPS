@@ -15,4 +15,7 @@ begin
     $readmemh("meminstr.dat", memory);
     
 end
+always @(*) begin
+    $display("instruction access at address %d",a);
+end
 endmodule

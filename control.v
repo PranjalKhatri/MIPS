@@ -19,11 +19,11 @@ always @(opcode) begin
 		6'b100011:{RegDst, ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, Branch, AluOP,Jump,Jal}=11'b011110_0_00_0_0; //lw
 		6'b101011:{RegDst, ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, Branch, AluOP,Jump,Jal}=11'bx1x001_0_00_0_0; //sw
 		6'b000100:{RegDst, ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, Branch, AluOP,Jump,Jal}=11'bx0x000_1_01_0_0; //beq
-		6'b000011:{RegDst, ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, Branch, AluOP,Jump,Jal}=11'bxxx100_1_00_1_1; //jal
-		6'b000010:{RegDst, ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, Branch, AluOP,Jump,Jal}=11'bxxx000_1_00_1_0; // j
+		6'b000011:{RegDst, ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, Branch, AluOP,Jump,Jal}=11'b1xx100_0_00_1_1; //jal
+		6'b000010:{RegDst, ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, Branch, AluOP,Jump,Jal}=11'bxxx000_0_00_1_0; // j
 
 		default:
-	{RegDst,ALUSrc,MemtoReg,RegWrite,MemRead,MemWrite,Branch,AluOP,Jump,Jal}=9'bxxx_xxx_x_xx_x_x;
+	{RegDst,ALUSrc,MemtoReg,RegWrite,MemRead,MemWrite,Branch,AluOP,Jump,Jal}=11'bxxx_xxx_x_xx_x_x;
 	endcase
 	if(Jump)
 		$display("jump enables");
