@@ -106,7 +106,11 @@ std::vector<std::string> tokenize(const std::string &str, char delimiter)
 
     while (std::getline(ss, token, delimiter))
     {
-        tokens.push_back(trim(token));
+        auto &&rs = trim(token);
+        if (rs.substr(0, 1) == "#" || rs.substr(0, 1) == ";")
+            break;
+        if (rs.length() >= 1)
+            tokens.push_back(trim(token));
     }
 
     return tokens;
@@ -119,26 +123,66 @@ std::string formatInstruction(const std::string &bin_str)
         << std::bitset<32>(bin_str).to_ulong();
     return oss.str();
 }
-
+std::string intToBinary(int number)
+{
+    std::bitset<32> binary(number);
+    return binary.to_string();
+}
+/// @brief takes 32 char string as input and returns last n character of it
+std::string stringLast(std::string s, int n)
+{
+    using namespace std;
+    if (s.length() != 32)
+    {
+        cerr << "Invalid input of length " << s.length();
+        exit(3);
+    }
+#define all(x) (x).begin(), (x).end()
+    string res = s;
+    reverse(all(res));
+    res = res.substr(0, n);
+    reverse(all(res));
+    return res;
+#undef all
+}
 std::vector<std::string> encode(std::vector<std::string> instructions)
 {
     using namespace std;
 
     int instruction_number = 0;
-    // unordered_map<string, int> label_map;
+    unordered_map<string, int> label_map;
     string shamt = "00000";
     std::vector<std::string> res;
+    for (auto i : instructions)
+    {
+        instruction_number++;
+        // cout << i << " " << i.length() << "\n";
+        if (i[i.length() - 1] == ':')
+        {
+            label_map[i.substr(0, i.length() - 1)] = instruction_number;
+            cout << i << " " << instruction_number << "\n";
+        }
+    }
+    bool flag = false;
+    instruction_number = 0;
     for (auto &instruction : instructions)
     {
+        instruction_number++;
         string bin_str;
-        auto tknized = tokenize(instruction, ',');
+        auto tknized = tokenize(instruction, ' ');
         for (auto i : tknized)
             cout << i << endl;
         bin_str += reverseOpCodeMap[tknized[0]];
         cout << "after opcode " << bin_str << "\n";
         switch (tknized.size())
         {
-        case 2:                    // jump label, jal label
+        case 1:
+            if (instruction[instruction.length() - 1] != ':')
+                goto invalid_instruction;
+            continue;
+            break;
+        case 2: // jump label, jal label
+            // std::cout<<;
             bin_str += tknized[1]; // Jump address
             break;
 
@@ -149,9 +193,11 @@ std::vector<std::string> encode(std::vector<std::string> instructions)
                 bin_str += reverseRegisterMap[tknized[2]];
                 bin_str += reverseRegisterMap[tknized[1]];
                 cout << "lw\\ sw " << bin_str << "\n";
-                bin_str += tknized[3]; // users resonsibility
+                string immediate = stringLast(intToBinary(stoi(tknized[3])),16);
+                cout<<"immediate is "<<immediate<<"\n";
+                bin_str += immediate; // users responsibility
             }
-            else if (tknized[0] != "beq")
+            else if (tknized[0] != "beq")//ALU
             {
                 bin_str += reverseRegisterMap[tknized[2]];
                 bin_str += reverseRegisterMap[tknized[3]];
@@ -159,27 +205,36 @@ std::vector<std::string> encode(std::vector<std::string> instructions)
                 bin_str += shamt;
                 bin_str += reverseFunctMap[tknized[0]];
             }
-            else
+            else//bransh
             {
                 bin_str += reverseRegisterMap[tknized[1]];
                 bin_str += reverseRegisterMap[tknized[2]];
-                bin_str += tknized[3];
+                string immediate = stringLast(intToBinary(stoi(tknized[3])),16);
+                cout<<"immediate is "<<immediate<<"\n";
+                bin_str += immediate;
             }
             break;
 
         default:
-            cerr << "Instruction not supported";
+        invalid_instruction:
+            cerr << "Instruction not supported(Program Corrupted)";
+            flag = true;
+            continue;
             break;
         }
-        instruction_number++;
         cout << "encoded instruction " << bin_str << " 0x"
              << std::setw(8) << std::setfill('0') << std::hex << std::bitset<32>(bin_str).to_ulong() << "\n";
         string rs = formatInstruction(bin_str);
         res.push_back(rs);
     }
+    if (flag)
+    {
+        cerr << "Unsupported instructions detected, Program output is corrupted\n";
+    }
     return res;
 }
 
+std::unordered_set<char> asm_comments = {';', '#'};
 std::vector<std::string> parseFile()
 {
     using namespace std;
@@ -199,7 +254,7 @@ std::vector<std::string> parseFile()
 
     while (std::getline(in, buf))
     {
-        if (trim(buf).substr(0, 2) != "//" && buf.length() > 5)
+        if (!asm_comments.count(trim(buf).substr(0, 1)[0]) && buf.length() > 2)
             lines.push_back(buf);                  // store or process line
         std::cout << "Read line: " << buf << "\n"; // optional
     }
@@ -207,7 +262,7 @@ std::vector<std::string> parseFile()
     auto res = encode(lines);
     for (auto i : res)
     {
-        out << i<<"\n";
+        out << i << "\n";
     }
     out.close();
     in.close();
