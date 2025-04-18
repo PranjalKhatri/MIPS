@@ -18,7 +18,7 @@ always @(ALUop, opA, opB) begin
 		4'b0111: result=opA<opB?1:0; //slt
 		4'b1100: result=~(opA|opB);
 	endcase
-	$display("result %d",result);
+	// $display("result %d",result);
 end
 
 endmodule

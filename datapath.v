@@ -55,7 +55,7 @@ mux #(1) muxpcsel(Jump,PCsel,1'b1,muxPcSel);
 mux #(5) muxRegDest(Jal,muxinstr_out,5'b11111,muxRDest);
 mux #(32) muxRegDestData(Jal,muxdata_out,PC_adr+1,muxRData);
 
-pclogic PC(clk, reset, muxSignExtend, PC_adr, muxPcSel); //generate PC
+pclogic PC(clk, reset, muxSignExtend, PC_adr, PCsel,Jump); //generate PC
 always @(*)begin
     $display("pc is %d",PC_adr);
 end

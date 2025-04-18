@@ -149,25 +149,27 @@ std::vector<std::string> encode(std::vector<std::string> instructions)
 {
     using namespace std;
 
-    int instruction_number = 0;
+    int instruction_number = 0, prog_cntr = 0;
     unordered_map<string, int> label_map;
     string shamt = "00000";
     std::vector<std::string> res;
     for (auto i : instructions)
     {
-        instruction_number++;
+        prog_cntr++;
         // cout << i << " " << i.length() << "\n";
         if (i[i.length() - 1] == ':')
         {
             label_map[i.substr(0, i.length() - 1)] = instruction_number;
             cout << i << " " << instruction_number << "\n";
         }
+        else
+            instruction_number++;
     }
     bool flag = false;
     instruction_number = 0;
     for (auto &instruction : instructions)
     {
-        instruction_number++;
+        // instruction_number++;
         string bin_str;
         auto tknized = tokenize(instruction, ' ');
         for (auto i : tknized)
@@ -183,7 +185,12 @@ std::vector<std::string> encode(std::vector<std::string> instructions)
             break;
         case 2: // jump label, jal label
             // std::cout<<;
-            bin_str += tknized[1]; // Jump address
+            {
+                string immediate = stringLast(intToBinary(stoi(to_string(label_map[tknized[1]]))), 26);
+                cout << "immediate is " << immediate << "\n";
+                bin_str += immediate;
+            }
+            // bin_str += tknized[1]; // Jump address
             break;
 
         case 4: // beq and r type instructions and lw  sw
@@ -193,11 +200,11 @@ std::vector<std::string> encode(std::vector<std::string> instructions)
                 bin_str += reverseRegisterMap[tknized[2]];
                 bin_str += reverseRegisterMap[tknized[1]];
                 cout << "lw\\ sw " << bin_str << "\n";
-                string immediate = stringLast(intToBinary(stoi(tknized[3])),16);
-                cout<<"immediate is "<<immediate<<"\n";
+                string immediate = stringLast(intToBinary(stoi(tknized[3])), 16);
+                cout << "immediate is " << immediate << "\n";
                 bin_str += immediate; // users responsibility
             }
-            else if (tknized[0] != "beq")//ALU
+            else if (tknized[0] != "beq") // ALU
             {
                 bin_str += reverseRegisterMap[tknized[2]];
                 bin_str += reverseRegisterMap[tknized[3]];
@@ -205,12 +212,12 @@ std::vector<std::string> encode(std::vector<std::string> instructions)
                 bin_str += shamt;
                 bin_str += reverseFunctMap[tknized[0]];
             }
-            else//bransh
+            else // bransh
             {
                 bin_str += reverseRegisterMap[tknized[1]];
                 bin_str += reverseRegisterMap[tknized[2]];
-                string immediate = stringLast(intToBinary(stoi(tknized[3])),16);
-                cout<<"immediate is "<<immediate<<"\n";
+                string immediate = stringLast(intToBinary(stoi(tknized[3])), 16);
+                cout << "immediate is " << immediate << "\n";
                 bin_str += immediate;
             }
             break;
@@ -234,6 +241,30 @@ std::vector<std::string> encode(std::vector<std::string> instructions)
     return res;
 }
 
+std::vector<std::string> encodeMemory(std::vector<std::string> buf)
+{
+    std::vector<std::string> res;
+
+    for (const auto &line : buf)
+    {
+        std::istringstream iss(line);
+        std::string directive;
+        int location, value;
+        iss >> directive >> location >> value;
+
+        if (directive != ".word")
+            continue; // skip invalid lines
+
+        std::stringstream addr_hex, val_hex;
+        addr_hex << "@" << std::hex << std::uppercase << location;
+        val_hex << std::hex << std::uppercase << value;
+
+        res.push_back(addr_hex.str() + "\n" + val_hex.str());
+    }
+
+    return res;
+}
+
 std::unordered_set<char> asm_comments = {';', '#'};
 std::vector<std::string> parseFile()
 {
@@ -243,6 +274,13 @@ std::vector<std::string> parseFile()
     cin >> fn;
     std::ifstream in(fn);
     std::ofstream out(fn + ".bin");
+    ofstream ot("parsed_" + fn);
+    ofstream odt("memory_" + fn + ".bin");
+    if (!ot.is_open() || !odt.is_open())
+    {
+        cerr << "error creating parsed files\n";
+        exit(5);
+    }
     if (!in || !out)
     {
         std::cerr << "Error: could not open file " << fn << " or " << fn + ".bin" << "\n";
@@ -250,20 +288,38 @@ std::vector<std::string> parseFile()
     }
 
     std::string buf;
-    std::vector<std::string> lines;
+    std::vector<std::string> instructions;
+    std::vector<std::string> data;
 
     while (std::getline(in, buf))
     {
-        if (!asm_comments.count(trim(buf).substr(0, 1)[0]) && buf.length() > 2)
-            lines.push_back(buf);                  // store or process line
-        std::cout << "Read line: " << buf << "\n"; // optional
+        if (trim(buf).length() > 2 && !asm_comments.count(trim(buf).substr(0, 1)[0]))
+        {
+            if (buf.find(".") != std::string::npos)
+            {
+                data.push_back(trim(buf));
+            }
+            else
+                instructions.push_back(trim(buf)); // store or process line
+        }
+        std::cout << "Read line: " << buf << buf.length() << "\n"; // optional
     }
-
-    auto res = encode(lines);
+    for (auto i : instructions)
+    {
+        ot << i << "\n";
+    }
+    auto res = encode(instructions);
     for (auto i : res)
     {
         out << i << "\n";
     }
+    auto mem_res = encodeMemory(data);
+    for (auto i : mem_res)
+    {
+        odt << i << "\n";
+    }
+    ot.close();
+    odt.close();
     out.close();
     in.close();
     return res;

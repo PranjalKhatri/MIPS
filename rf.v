@@ -13,6 +13,10 @@ reg [31:0] memory [31:0]; //32 32-bit registers
 assign da=(ra!=0)?memory[ra]:0;
 assign db=(rb!=0)?memory[rb]:0;
 
+initial begin
+	memory[0] = 0;
+end
+
 always@(posedge clk)begin
 	if(RegWrite==1'b1)begin
 		memory[rc]<=dc;

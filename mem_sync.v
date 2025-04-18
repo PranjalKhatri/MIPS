@@ -19,7 +19,7 @@ always @(posedge clk) begin
 	if (mwrite==1) begin
 		memory[a]<=din;
 	end
-		$display("memory read at %d ",a);
+		// $display("memory read at %d ",a);
 end
 
 

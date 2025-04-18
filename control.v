@@ -25,8 +25,10 @@ always @(opcode) begin
 		default:
 	{RegDst,ALUSrc,MemtoReg,RegWrite,MemRead,MemWrite,Branch,AluOP,Jump,Jal}=11'bxxx_xxx_x_xx_x_x;
 	endcase
+	$display("opcode %b",opcode);
 	if(Jump)
 		$display("jump enables");
+
 end
 
 endmodule
