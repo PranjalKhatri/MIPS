@@ -1,9 +1,9 @@
-module datapath(clk, reset, RegDst,AluSrc,MemtoReg,RegWrite,MemRead,MemWrite,Branch,ALUOp,OpCode,Jump,Jal);
+module datapath(clk, reset, RegDst,AluSrc,MemtoReg,RegWrite,MemRead,MemWrite,Branch,ALUOp,OpCode,funct,Jump,Jal,Jr);
 
 input clk;
 input reset;
 
-input RegDst,AluSrc,MemtoReg,RegWrite,MemRead,MemWrite,Branch,Jump,Jal;
+input RegDst,AluSrc,MemtoReg,RegWrite,MemRead,MemWrite,Branch,Jump,Jal,Jr;
 
 wire [31:0] Instruction;
 
@@ -13,6 +13,7 @@ wire [31:0] ALUout;
 wire Zero;
 
 output [5:0] OpCode;
+output [5:0] funct;
 assign OpCode = Instruction[31:26];
 
 wire [31:0] PC_adr;
@@ -32,12 +33,15 @@ wire [31:0] muxSignExtend;
 wire PCsel,muxPcSel;
 wire [4:0] muxRDest;
 wire [31:0] muxRData;
+wire [31:0] muxJrOut;
 
+
+assign funct = Instruction[5:0];
 mem_async meminstr(PC_adr[7:0],Instruction); //Instruction memory
 mem_sync memdata(clk, ALUout[7:0], ReadData, ReadRegister2, MemRead, MemWrite); //Data memory
 rf registerfile(clk,RegWrite,Instruction[25:21],Instruction[20:16],muxRDest, ReadRegister1, ReadRegister2, muxRData); //Registers
 //---------------------------rs----------------rt
-alucontrol AluControl(ALUOp, Instruction[5:0], ALUCtrl); //ALUControl-----inst[5:0] - > funct
+alucontrol AluControl(ALUOp, funct, ALUCtrl); //ALUControl-----inst[5:0] - > funct
 alu Alu(ReadRegister1, muxalu_out, ALUCtrl, ALUout, Zero); //ALU
 
 andm andPC(Branch, Zero, PCsel); //AndPC (branch & zero)
@@ -54,8 +58,9 @@ mux #(1) muxpcsel(Jump,PCsel,1'b1,muxPcSel);
 
 mux #(5) muxRegDest(Jal,muxinstr_out,5'b11111,muxRDest);
 mux #(32) muxRegDestData(Jal,muxdata_out,PC_adr+1,muxRData);
+mux #(32) muxJr(Jr,muxSignExtend,ReadRegister1,muxJrOut);
 
-pclogic PC(clk, reset, muxSignExtend, PC_adr, PCsel,Jump); //generate PC
+pclogic PC(clk, reset, muxJrOut, PC_adr, PCsel,Jump); //generate PC
 always @(*)begin
     $display("pc is %d",PC_adr);
 end

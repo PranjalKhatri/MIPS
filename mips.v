@@ -5,6 +5,7 @@ input clk;
 input reset;
 
 wire [5:0] OpCode;
+wire [5:0] funct;
 
 wire [1:0] ALUOp;
 
@@ -17,9 +18,10 @@ wire MemWrite;
 wire Branch;
 wire Jump;
 wire Jal;
+wire Jr;
 
-datapath Datapath(clk,reset,RegDst,ALUSrc,MemToReg,RegWrite,MemRead,MemWrite,Branch,ALUOp,OpCode,Jump,Jal);
+datapath Datapath(clk,reset,RegDst,ALUSrc,MemToReg,RegWrite,MemRead,MemWrite,Branch,ALUOp,OpCode,funct,Jump,Jal,Jr);
 
-control Control(OpCode,RegDst,ALUSrc,MemToReg,RegWrite,MemRead,MemWrite,Branch,ALUOp,Jump,Jal); 
+control Control(OpCode,funct,RegDst,ALUSrc,MemToReg,RegWrite,MemRead,MemWrite,Branch,ALUOp,Jump,Jal,Jr); 
 
 endmodule

@@ -10,10 +10,10 @@ std::unordered_map<int, std::string> functMap = {
 std::unordered_map<int, std::string> registerMap = {
     {0, "$zero"}, {1, "$at"}, {2, "$v0"}, {3, "$v1"}, {4, "$a0"}, {5, "$a1"}, {6, "$a2"}, {7, "$a3"}, {8, "$t0"}, {9, "$t1"}, {10, "$t2"}, {11, "$t3"}, {12, "$t4"}, {13, "$t5"}, {14, "$t6"}, {15, "$t7"}, {16, "$s0"}, {17, "$s1"}, {18, "$s2"}, {19, "$s3"}, {20, "$s4"}, {21, "$s5"}, {22, "$s6"}, {23, "$s7"}, {24, "$t8"}, {25, "$t9"}, {26, "$k0"}, {27, "$k1"}, {28, "$gp"}, {29, "$sp"}, {30, "$fp"}, {31, "$ra"}};
 std::unordered_map<std::string, std::string> reverseOpCodeMap = {
-    {"R", "000000"}, {"add", "000000"}, {"or", "000000"}, {"and", "000000"}, {"slt", "000000"}, {"lw", "100011"}, {"sw", "101011"}, {"beq", "000100"}, {"j", "000010"}, {"jal", "000011"}};
+    {"R", "000000"},{"jr","000000"}, {"add", "000000"}, {"or", "000000"}, {"and", "000000"}, {"slt", "000000"}, {"lw", "100011"}, {"sw", "101011"}, {"beq", "000100"}, {"j", "000010"}, {"jal", "000011"}};
 
 std::unordered_map<std::string, std::string> reverseFunctMap = {
-    {"and", "100100"}, {"sub", "100010"}, {"add", "100000"}, {"or", "100101"}, {"slt", "101010"}};
+    {"and", "100100"}, {"sub", "100010"}, {"add", "100000"}, {"or", "100101"}, {"slt", "101010"},{"jr","001000"}};
 std::unordered_map<std::string, std::string> reverseRegisterMap;
 
 void decodeInstruction(uint32_t instruction)
@@ -185,6 +185,11 @@ std::vector<std::string> encode(std::vector<std::string> instructions)
             break;
         case 2: // jump label, jal label
             // std::cout<<;
+            if(tknized[0] == "jr"){
+                bin_str += reverseRegisterMap[tknized[1]];
+                bin_str += string(15,'0');
+                bin_str += reverseFunctMap[tknized[0]];
+            }else
             {
                 string immediate = stringLast(intToBinary(stoi(to_string(label_map[tknized[1]]))), 26);
                 cout << "immediate is " << immediate << "\n";
