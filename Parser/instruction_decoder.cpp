@@ -183,7 +183,7 @@ std::vector<std::string> encode(std::vector<std::string> instructions)
                 goto invalid_instruction;
             continue;
             break;
-        case 2: // jump label, jal label
+        case 2: // jump label, jal label, jr register
             // std::cout<<;
             if(tknized[0] == "jr"){
                 bin_str += reverseRegisterMap[tknized[1]];
@@ -278,9 +278,9 @@ std::vector<std::string> parseFile()
     cout << "file name?\n";
     cin >> fn;
     std::ifstream in(fn);
-    std::ofstream out(fn + ".bin");
-    ofstream ot("parsed_" + fn);
-    ofstream odt("memory_" + fn + ".bin");
+    std::ofstream out("output/"+fn + ".bin");
+    ofstream ot("output/parsed_" + fn);
+    ofstream odt("output/memory_" + fn + ".bin");
     if (!ot.is_open() || !odt.is_open())
     {
         cerr << "error creating parsed files\n";
@@ -313,16 +313,19 @@ std::vector<std::string> parseFile()
     {
         ot << i << "\n";
     }
+    ot.flush();
     auto res = encode(instructions);
     for (auto i : res)
     {
         out << i << "\n";
     }
+    out.flush();
     auto mem_res = encodeMemory(data);
     for (auto i : mem_res)
     {
         odt << i << "\n";
     }
+    odt.flush();
     ot.close();
     odt.close();
     out.close();
