@@ -63,6 +63,9 @@ mux #(32) muxJr(Jr,muxSignExtend,ReadRegister1,muxJrOut);
 pclogic PC(clk, reset, muxJrOut, PC_adr, PCsel,Jump); //generate PC
 always @(*)begin
     $display("pc is %d",PC_adr);
+    if (Jr) begin
+        $display("Jr at %d muxJrout %d",PC_adr,muxJrOut);
+    end
 end
 
 endmodule

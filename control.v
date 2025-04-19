@@ -15,7 +15,7 @@ output reg Jal;
 output reg Jr;
 output reg [1:0] AluOP;
 
-always @(opcode) begin
+always @(opcode or funct) begin
 	case (opcode)
 		6'b000000:begin
 			case (funct)
@@ -34,7 +34,7 @@ always @(opcode) begin
 		default:
 	{RegDst,ALUSrc,MemtoReg,RegWrite,MemRead,MemWrite,Branch,AluOP,Jump,Jal,Jr}=12'bxxx_xxx_x_xx_x_x_x;
 	endcase
-	$display("opcode %b",opcode);
+	$display("opcode %b funct %b",opcode,funct);
 	if(Jump)
 		$display("jump enables");
 
