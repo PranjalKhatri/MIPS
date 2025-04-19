@@ -24,6 +24,7 @@
         add $t2 $zero $t3    ; counter = 1
 
 loop:
+
         add $t0 $t0 $t2      ; sum += counter
         add $t2 $t2 $t3      ; counter += 1
         add $t4 $t2 $zero    ; temp = counter
