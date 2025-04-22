@@ -14,7 +14,7 @@ initial begin
 	res = 1;
 	#10 res = 0;
 
-	#3000
+	#300000
 	for (i = 0; i < 50;i++ ) begin
 		$display("memory content at %d is %d",i,mips_DUT.Datapath.memdata.memory[i]);
 	end
