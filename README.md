@@ -1,7 +1,7 @@
 # MIPS-single-cycle
 MIPS single cycle Verilog implementation based on Computer Organization and Design by David A. Patterson and John L. Hennessy.
 
-##Overview
+## Overview
 The implementation supports 1 cycle per instruction add, sub, lw, sw, beq and slt.
 Based on the implementation scheme from chapter 5, The Processor: Datapath and Control of Computer 
 Organization and Design by David A. Patterson and John L. Hennessy, 3rd edition.
@@ -31,7 +31,14 @@ done:
 The program computes the sum of the first 16 values from the data memory. 
 The result will be 5 and will be located in the data memory.
 
-#Tools
-Modelsim was used for simulation. There is a free student edition available.
-QtSpim was used to view the codes for each instruction.
-# MIPS
+## Instructions on how to use
+Goto [Parser](Parser) and then compile [instruction_decoder.cpp](Parser/instruction_decoder.cpp)
+```bash
+g++ -o main instruction_decoder.cpp
+```
+You can create program in MIPS assemble, some [samples](Parser/Programs/) are also provided.
+The supported instructions are:   
+
+> lw,sw,j,jr,jal,beq,add,sub
+
+You need to copy the ouput files generated after compiling your program to [memdata](./memdata.dat) and [meminstr](./meminstr.dat)
